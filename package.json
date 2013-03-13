@@ -1,0 +1,18 @@
+{
+  "name": "amdxform",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "buster test"
+  },
+  "repository": "",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "buster": "~0.6.12",
+    "esprima": "~1.0.2"
+  }
+}
