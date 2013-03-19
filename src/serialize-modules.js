@@ -10,28 +10,18 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
 
-  var serialization = new Serialization();
-  resolve(entryPointName, serialization.addModule);
-
-  callback(serialization.moduleList, serialization.moduleMap);
+  var modules = [];
+  loadModule(resolve, modules, callback, entryPointName)
 }
 
-/**
- * @constructor
- */
-function Serialization() {
-  'use strict';
-
-  this.moduleList = [];
-  this.moduleMap = {};
-
-  this.addModule = this.addModule.bind(this);
+function loadModule(resolve, modules, callback, name) {
+  resolve(name, function(_, module) {
+    modules.unshift(module);
+    var deps = module.dependencies;
+    if (deps) {
+      deps.forEach(loadModule.bind(null, resolve, modules, callback));
+    } else {
+      callback(modules);
+    }
+  });
 }
-
-Serialization.prototype.addModule = function(module) {
-  'use strict';
-
-  var name = module.name;
-  this.moduleList.push(name);
-  this.moduleMap[name] = module.ast;
-};

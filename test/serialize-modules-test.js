@@ -1,40 +1,67 @@
 var buster = require('buster');
-var esprima = require('esprima');
 var serializeModules = require('../src/serialize-modules').serializeModules;
-var format = require('util').format;
 
+function createResolve(stub, module) {
+  for (var i = 1, len = arguments.length; i < len; i += 1) {
+    module = arguments[i];
+    stub.withArgs(module.name).callsArgWith(1, null, module);
+  }
+  return stub;
+}
+
+function createModule(name, dependencies) {
+  return {
+    type: 'module',
+    dependencies: dependencies,
+    name: name,
+    ast: {}
+  };
+}
 buster.testCase('serialize-modules', {
   'serializeModules': {
 
-    'requests the entry module from the resolve function': function() {
-      var resolve = this.spy();
-      var entryModule = 'arbitrary/module';
+    'a simple module without dependencies': {
+      'requests the entry module from the resolve function': function() {
+        var resolve = this.spy();
+        var entryModule = 'arbitrary/module';
 
-      serializeModules(entryModule, resolve, function() {});
+        serializeModules(entryModule, resolve, function() {});
 
-      assert.calledOnceWith(resolve, entryModule);
+        assert.calledWith(resolve, entryModule);
 
+      },
+
+      'invokes the callback with an array containing the only module': function() {
+        var entryModuleName = 'arbitrary/module';
+        var entryModule = createModule(entryModuleName);
+        var resolve = createResolve(this.stub(), entryModule);
+        var callback = this.spy();
+
+        serializeModules(entryModuleName, resolve, callback);
+        assert.calledOnceWith(callback, [entryModule]);
+      }
     },
 
-    'invokes the callback': {
-      'with a list of module names and a module map':
-        function() {
-          var entryModule = 'arbitrary/module';
-          var moduleCode = '({arbitrary: "code"})';
-          var moduleExpression = esprima.parse(moduleCode).body[0];
-          var resolve = this.stub().callsArgWith(1, {
-            type: 'module',
-            name: entryModule,
-            ast: moduleExpression
-          });
-          var callback = this.spy();
+    'two modules, one pulled in as absolute dependency': {
+      'requests the dependency from the resolver': function() {
+        var entryModule = createModule('entry/module', ['a/dependency']);
+        var dependencyModule = createModule('a/dependency');
+        var resolve = createResolve(this.stub(), entryModule, dependencyModule);
 
-          serializeModules(entryModule, resolve, callback);
+        serializeModules(entryModule.name, resolve, function() {});
+        assert.calledWith(resolve, dependencyModule.name);
+      },
 
-          var map = {};
-          map[entryModule] = moduleExpression;
-          assert.calledOnceWith(callback, [entryModule], map);
-        }
+      'invokes the callback with the two modules, dependency first': function() {
+        var entryModule = createModule('entry/module', ['dependency/module']);
+        var dependencyModule = createModule('dependency/module');
+        var resolve = createResolve(this.stub(), entryModule, dependencyModule);
+        var callback = this.spy();
+
+        serializeModules(entryModule.name, resolve, callback);
+        assert.calledOnceWith(callback, [dependencyModule, entryModule]);
+      }
+
     }
   }
 });

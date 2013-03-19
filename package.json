@@ -10,9 +10,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "when": "~2.0.0"
   },
   "devDependencies": {
-    "buster": "~0.6.12",
-    "esprima": "~1.0.2"
+    "buster": "~0.6.12"
   }
 }
