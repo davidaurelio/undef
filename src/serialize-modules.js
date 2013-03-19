@@ -1,3 +1,6 @@
+var when = require('when');
+var promiseFromNodeFunc = require('when/node/function').call;
+
 exports.serializeModules = serializeModules;
 
 /**
@@ -10,18 +13,67 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
 
-  var modules = [];
-  loadModule(resolve, modules, callback, entryPointName)
+  loadModule([], {}, resolve, entryPointName).then(callback);
 }
 
-function loadModule(resolve, modules, callback, name) {
-  resolve(name, function(_, module) {
-    modules.unshift(module);
-    var deps = module.dependencies;
-    if (deps) {
-      deps.forEach(loadModule.bind(null, resolve, modules, callback));
-    } else {
-      callback(modules);
-    }
-  });
+function id(object) {
+  'use strict';
+
+  return object;
+}
+
+function promiseFromModuleNames(modules, modulePromises, resolve, names) {
+  'use strict';
+
+  var promiseFromName = loadModule.bind(null, modules, modulePromises, resolve);
+  var modulePromises = names.map(promiseFromName);
+
+  // spread.id makes sure that only one module list is forwarded
+  return when.all(modulePromises).spread(id);
+}
+
+function addModule(module, modules) {
+  'use strict';
+
+  modules.push(module);
+  return modules;
+}
+
+function addDependenciesAndModule(modules, modulePromises, resolve, module) {
+  'use strict';
+
+  return promiseFromModuleNames(
+    modules,
+    modulePromises,
+    resolve,
+    module.dependencies
+  ).then(addModule.bind(null, module));
+}
+
+function moduleLoaded(modules, modulePromises, resolve, module) {
+  'use strict';
+
+  var dependencies = module.dependencies;
+  return dependencies ?
+    addDependenciesAndModule(modules, modulePromises, resolve, module) :
+    addModule(module, modules);
+}
+
+function modulePromise(modules, modulePromises, resolve, name) {
+  'use strict';
+
+  return promiseFromNodeFunc(resolve, name)
+    .then(function(module) {
+      return moduleLoaded(modules, modulePromises, resolve, module);
+    });
+}
+function loadModule(modules, modulePromises, resolve, name) {
+  'use strict';
+
+  if (!modulePromises.hasOwnProperty(name)) {
+    return modulePromises[name] =
+      modulePromise(modules, modulePromises, resolve, name);
+  } else {
+    return modulePromises[name];
+  }
 }
