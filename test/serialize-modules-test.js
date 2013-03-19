@@ -1,9 +1,9 @@
 var buster = require('buster');
 var serializeModules = require('../src/serialize-modules').serializeModules;
 
-function createResolve(stub, module) {
-  for (var i = 1, len = arguments.length; i < len; i += 1) {
-    module = arguments[i];
+function createResolve(stub, modules) {
+  for (var i = 0, len = modules.length; i < len; i += 1) {
+    var module = modules[i];
     stub.withArgs(module.name).callsArgWith(1, null, module);
   }
   return stub;
@@ -34,7 +34,7 @@ buster.testCase('serialize-modules', {
       'invokes the callback with an array containing the only module': function() {
         var entryModuleName = 'arbitrary/module';
         var entryModule = createModule(entryModuleName);
-        var resolve = createResolve(this.stub(), entryModule);
+        var resolve = createResolve(this.stub(), [entryModule]);
         var callback = this.spy();
 
         serializeModules(entryModuleName, resolve, callback);
@@ -46,7 +46,7 @@ buster.testCase('serialize-modules', {
       'requests the dependency from the resolver': function() {
         var entryModule = createModule('entry/module', ['a/dependency']);
         var dependencyModule = createModule('a/dependency');
-        var resolve = createResolve(this.stub(), entryModule, dependencyModule);
+        var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
         serializeModules(entryModule.name, resolve, function() {});
         assert.calledWith(resolve, dependencyModule.name);
@@ -55,13 +55,12 @@ buster.testCase('serialize-modules', {
       'invokes the callback with the two modules, dependency first': function() {
         var entryModule = createModule('entry/module', ['dependency/module']);
         var dependencyModule = createModule('dependency/module');
-        var resolve = createResolve(this.stub(), entryModule, dependencyModule);
+        var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
         var callback = this.spy();
 
         serializeModules(entryModule.name, resolve, callback);
         assert.calledOnceWith(callback, [dependencyModule, entryModule]);
       }
-
     }
   }
 });
