@@ -4,7 +4,7 @@ var serializeModules = require('../src/serialize-modules').serializeModules;
 function createResolve(stub, modules) {
   for (var i = 0, len = modules.length; i < len; i += 1) {
     var module = modules[i];
-    stub.withArgs(module.name).callsArgWith(1, null, module);
+    stub.withArgs(module.name).callsArgWithAsync(1, null, module);
   }
   return stub;
 }
@@ -31,35 +31,39 @@ buster.testCase('serialize-modules', {
 
       },
 
-      'invokes the callback with an array containing the only module': function() {
+      'invokes the callback with an array containing the only module': function(done) {
         var entryModuleName = 'arbitrary/module';
         var entryModule = createModule(entryModuleName);
         var resolve = createResolve(this.stub(), [entryModule]);
-        var callback = this.spy();
 
-        serializeModules(entryModuleName, resolve, callback);
-        assert.calledOnceWith(callback, [entryModule]);
+        serializeModules(entryModuleName, resolve, function(modules) {
+          assert.equals(modules, [entryModule]);
+          done();
+        });
       }
     },
 
     'two modules, one pulled in as absolute dependency': {
-      'requests the dependency from the resolver': function() {
+      'requests the dependency from the resolver': function(done) {
         var entryModule = createModule('entry/module', ['a/dependency']);
         var dependencyModule = createModule('a/dependency');
         var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-        serializeModules(entryModule.name, resolve, function() {});
-        assert.calledWith(resolve, dependencyModule.name);
+        serializeModules(entryModule.name, resolve, function() {
+          assert.calledWith(resolve, dependencyModule.name);
+          done();
+        });
       },
 
-      'invokes the callback with the two modules, dependency first': function() {
+      'invokes the callback with the two modules, dependency first': function(done) {
         var entryModule = createModule('entry/module', ['dependency/module']);
         var dependencyModule = createModule('dependency/module');
         var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
-        var callback = this.spy();
 
-        serializeModules(entryModule.name, resolve, callback);
-        assert.calledOnceWith(callback, [dependencyModule, entryModule]);
+        serializeModules(entryModule.name, resolve, function(modules) {
+          assert.equals(modules, [dependencyModule, entryModule]);
+          done();
+        });
       }
     }
   }
