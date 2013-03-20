@@ -1,4 +1,14 @@
 var assertions = exports.assertions = {
+  containsOnce: {
+    assert: function(array, value) {
+      var index = array.indexOf(value);
+      return index !== -1 && array.indexOf(value, index + 1) === -1;
+    },
+    expectation: 'toContainOnce',
+    assertMessage: 'Expected [${0}] to contain ${1} once',
+    refuteMessage: 'Expected [${0}] not to contain ${1} exavtly once'
+  },
+
   containsInOrder: {
     assert: function(sequence, a, b) {
       var i = 3, iMax = arguments.length;
@@ -13,21 +23,12 @@ var assertions = exports.assertions = {
 
       return true;
     },
-
-    assertMessage: 'expected ${0} to contain ${1} in order',
-    refuteMessage: 'expected ${0} not to contain ${1} in order',
+    expectation: 'toContainInOrder',
+    assertMessage: 'Expected [${0}] to contain ${1} in order',
+    refuteMessage: 'Expected [${0}] not to contain ${1} in order',
     values: function(sequence) {
       return [sequence, [].slice.call(arguments, 1).join(', ')];
     }
-  },
-
-  hasLength: {
-    assert: function(sequence, length) {
-      return sequence.length === +length;
-    },
-
-    assertMessage: 'expected ${0} to have length ${1}',
-    refuteMessage: 'expected ${0} not to have length ${1}'
   }
 };
 

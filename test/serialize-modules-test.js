@@ -1,6 +1,7 @@
-var buster = require('./buster-setup');
+var buster = require('buster');
 var format = require('util').format;
 
+require('./assertions').addAll(buster.assertions);
 var serializeModules = require('../src/serialize-modules').serializeModules;
 
 function moduleToString() {
@@ -32,11 +33,11 @@ function mapFromModules(modules) {
     return modules;
   }, {});
 }
+
 buster.testCase('serialize-modules', {
   'serializeModules': {
-
     'a simple module without dependencies': {
-      'requests the entry module from the resolve function': function(done) {
+      'should request the entry module from the resolve function': function(done) {
         var entryModule = 'arbitrary/module';
         var resolve = createResolve(this.stub(), [createModule(entryModule)]);
 
@@ -46,7 +47,7 @@ buster.testCase('serialize-modules', {
         });
       },
 
-      'invokes the callback with an array containing the only module': function(done) {
+      'should invoke the callback with an array containing the only module': function(done) {
         var entryModuleName = 'arbitrary/module';
         var entryModule = createModule(entryModuleName);
         var resolve = createResolve(this.stub(), [entryModule]);
@@ -59,7 +60,7 @@ buster.testCase('serialize-modules', {
     },
 
     'two modules, one pulled in as absolute dependency': {
-      'requests the dependency from the resolver': function(done) {
+      'should request the dependency from the resolver': function(done) {
         var entryModule = createModule('entry/module', ['a/dependency']);
         var dependencyModule = createModule('a/dependency');
         var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
@@ -70,7 +71,7 @@ buster.testCase('serialize-modules', {
         });
       },
 
-      'invokes the callback with the two modules, dependency first': function(done) {
+      'should invoke the callback with the two modules, dependency first': function(done) {
         var entryModule = createModule('entry/module', ['dependency/module']);
         var dependencyModule = createModule('dependency/module');
         var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
@@ -82,8 +83,8 @@ buster.testCase('serialize-modules', {
       }
     },
 
-    'A tree of dependencies without repetitions': function(done) {
-      var modules = [
+    'more complex scenarios': {
+      'A tree of dependencies without repetitions': testModules('a', [
         createModule('a', ['b', 'c']),
         createModule('b', ['d', 'e']),
         createModule('c', ['f', 'g']),
@@ -91,48 +92,52 @@ buster.testCase('serialize-modules', {
         createModule('e'),
         createModule('f'),
         createModule('g')
-      ];
-      var modulesMap = mapFromModules(modules);
+      ]),
 
-      var resolve = createResolve(this.stub(), modules);
-
-      serializeModules('a', resolve, function(result) {
-        assert.hasLength(result, modules.length);
-        modules.forEach(function(module) {
-          assert.contains(result, module);
-          var dependencies = module.dependencies;
-          if (dependencies) {
-            dependencies.forEach(function(name) {
-              assert.containsInOrder(result, modulesMap[name], module);
-            });
-          }
-        });
-        done();
-      });
-    },
-
-    'a dependency diamond': function(done) {
-      var modules = [
+      'A dependency diamond': testModules('a', [
         createModule('a', ['b', 'c']),
         createModule('b', ['d']),
         createModule('c', ['d']),
         createModule('d')
-      ];
-      var modulesMap = mapFromModules(modules);
-      var resolve = createResolve(this.stub(), modules);
-      serializeModules('a', resolve, function(result) {
-        assert.hasLength(result, modules.length);
+      ])
+    }
+  }
+});
+
+function testModules(entryModuleName, modules) {
+  function serialize(stub, callback) {
+    serializeModules(entryModuleName, createResolve(stub, modules), callback);
+  }
+  var modulesMap = mapFromModules(modules);
+
+  return {
+    'should create a serialization that contains each module exactly once': function(done) {
+      serialize(this.stub(), function(result) {
         modules.forEach(function(module) {
-          assert.contains(result, module);
-          var dependencies = module.dependencies;
-          if (dependencies) {
-            dependencies.forEach(function(name) {
-              assert.containsInOrder(result, modulesMap[name], module);
-            });
-          }
+          assert.containsOnce(result, module);
         });
+        done();
+      })
+    },
+    'should contain all dependencies in the correct order': function(done) {
+      serialize(this.stub(), function(result) {
+        modules
+          .filter(hasDependencies)
+          .forEach(function(module) {
+            module.dependencies
+              .map(lookup, modulesMap)
+              .forEach(function(dependency) {
+                assert.containsInOrder(result, dependency, module)
+              });
+          });
         done();
       })
     }
   }
-});
+}
+function hasDependencies(module) {
+  return !!(module.dependencies && module.dependencies.length);
+}
+function lookup(property) {
+  return this[property];
+}
