@@ -1,5 +1,5 @@
-var when = require('when');
-var promiseFromNodeFunc = require('when/node/function').call;
+var Q = require('q');
+var promiseFromNodeFunc = Q.nfcall;
 
 exports.serializeModules = serializeModules;
 
@@ -16,20 +16,11 @@ function serializeModules(entryPointName, resolve, callback) {
   loadModule([], {}, resolve, entryPointName).then(callback);
 }
 
-function id(object) {
-  'use strict';
-
-  return object;
-}
-
 function promiseFromModuleNames(modules, modulePromises, resolve, names) {
   'use strict';
 
   var promiseFromName = loadModule.bind(null, modules, modulePromises, resolve);
-  var modulePromises = names.map(promiseFromName);
-
-  // spread.id makes sure that only one module list is forwarded
-  return when.all(modulePromises).spread(id);
+  return Q.all(names.map(promiseFromName)).get(0);
 }
 
 function addModule(module, modules) {
