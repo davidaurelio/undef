@@ -19,6 +19,15 @@ var assertions = exports.assertions = {
     values: function(sequence) {
       return [sequence, [].slice.call(arguments, 1).join(', ')];
     }
+  },
+
+  hasLength: {
+    assert: function(sequence, length) {
+      return sequence.length === +length;
+    },
+
+    assertMessage: 'expected ${0} to have length ${1}',
+    refuteMessage: 'expected ${0} not to have length ${1}'
   }
 };
 

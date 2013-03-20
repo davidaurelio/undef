@@ -26,6 +26,12 @@ function createModule(name, dependencies) {
     toString: moduleToString
   };
 }
+function mapFromModules(modules) {
+  return modules.reduce(function(modules, module) {
+    modules[module.name] = module;
+    return modules;
+  }, {});
+}
 buster.testCase('serialize-modules', {
   'serializeModules': {
 
@@ -86,14 +92,12 @@ buster.testCase('serialize-modules', {
         createModule('f'),
         createModule('g')
       ];
-      var modulesMap = modules.reduce(function(modules, module) {
-        modules[module.name] = module;
-        return modules;
-      }, {});
+      var modulesMap = mapFromModules(modules);
 
       var resolve = createResolve(this.stub(), modules);
 
       serializeModules('a', resolve, function(result) {
+        assert.hasLength(result, modules.length);
         modules.forEach(function(module) {
           assert.contains(result, module);
           var dependencies = module.dependencies;
@@ -105,6 +109,30 @@ buster.testCase('serialize-modules', {
         });
         done();
       });
+    },
+
+    'a dependency diamond': function(done) {
+      var modules = [
+        createModule('a', ['b', 'c']),
+        createModule('b', ['d']),
+        createModule('c', ['d']),
+        createModule('d')
+      ];
+      var modulesMap = mapFromModules(modules);
+      var resolve = createResolve(this.stub(), modules);
+      serializeModules('a', resolve, function(result) {
+        assert.hasLength(result, modules.length);
+        modules.forEach(function(module) {
+          assert.contains(result, module);
+          var dependencies = module.dependencies;
+          if (dependencies) {
+            dependencies.forEach(function(name) {
+              assert.containsInOrder(result, modulesMap[name], module);
+            });
+          }
+        });
+        done();
+      })
     }
   }
 });
