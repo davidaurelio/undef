@@ -1,33 +1,11 @@
-var buster = require('buster');
-var serializeModules = require('../src/serialize-modules').serializeModules;
-
+var buster = require('./buster-setup');
 var format = require('util').format;
 
-buster.assertions.add('containsInOrder', {
-  assert: function(sequence, a, b) {
-    var i = 3, iMax = arguments.length;
-    do {
-      if (sequence.indexOf(b) < sequence.indexOf(a)) {
-        return false;
-      }
-      a = b;
-      b = arguments[i];
-      i += 1;
-    } while(i < iMax);
-
-    return true;
-  },
-
-  assertMessage: 'expected ${0} to contain ${1} in order',
-  refuteMessage: 'expected ${0} not to contain ${1} in order',
-  values: function(sequence) {
-    return [sequence, [].slice.call(arguments, 1).join(', ')];
-  }
-});
+var serializeModules = require('../src/serialize-modules').serializeModules;
 
 function moduleToString() {
   var dependencies = this.dependencies;
-  dependencies = dependencies ? format(' (%s)', dependencies.join(', ')) : ''
+  dependencies = dependencies ? format(' (%s)', dependencies.join(', ')) : '';
   return format('<module %s%s>', this.name, dependencies);
 }
 
