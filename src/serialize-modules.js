@@ -7,8 +7,9 @@ exports.serializeModules = serializeModules;
  * Serializes a module tree, starting from an entry point.
  *
  * @param {string} entryPointName The name of the entry point module.
- * @param {function} resolve -- will receive one argument, the name of a module
- * @param callback
+ * @param {function(string, function(?Error, Module=))} resolve A callback to
+ *    resolve functions
+ * @param {function(Array)} callback
  */
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
