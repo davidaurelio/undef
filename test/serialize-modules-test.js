@@ -93,7 +93,32 @@ buster.testCase('serializeModules', {
       createModule('b', ['d']),
       createModule('c', ['d']),
       createModule('d')
-    ])
+    ]),
+
+    'A circular dependency should resolve': function(done) {
+      var nameA = 'a/b', nameB = 'c/d';
+      var moduleA = createModule(nameA, [nameB]);
+      var moduleB = createModule(nameB, [nameA]);
+      var resolve = createResolve(this.stub(), [moduleA, moduleB]);
+
+      serializeModules(nameA, resolve, function(modules) {
+        assert.equals(modules, [moduleB, moduleA]);
+        done();
+      });
+    },
+
+    'An indirect circular dependency should resolve': function(done) {
+      var nameA = 'a/b', nameB = 'c/d', nameC = 'e/f';
+      var moduleA = createModule(nameA, [nameB]);
+      var moduleB = createModule(nameB, [nameC]);
+      var moduleC = createModule(nameC, [nameA]);
+      var resolve = createResolve(this.stub(), [moduleA, moduleB, moduleC]);
+
+      serializeModules(nameA, resolve, function(modules) {
+        assert.equals(modules, [moduleC, moduleB, moduleA]);
+        done();
+      });
+    }
   }
 });
 

@@ -14,14 +14,14 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
 
-  loadModule([], {}, resolve, entryPointName).then(callback);
+  loadModule([], {}, resolve, entryPointName, []).then(callback);
 }
 
-function promiseFromModuleNames(modules, modulePromises, resolve, names) {
+function loadModules(modules, modulePromises, resolve, names, requestedBy) {
   'use strict';
 
   return Q.all(names.map(function(name) {
-    return loadModule(modules, modulePromises, resolve, name);
+    return loadModule(modules, modulePromises, resolve, name, requestedBy);
   })).get(0);
 }
 
@@ -32,40 +32,42 @@ function addModule(module, modules) {
   return modules;
 }
 
-function addDependenciesAndModule(modules, modulePromises, resolve, module) {
+function addDependenciesAndModule(modules, modulePromises, resolve, module, requestedBy) {
   'use strict';
 
-  return promiseFromModuleNames(
-    modules,
-    modulePromises,
-    resolve,
-    module.dependencies
-  ).then(addModule.bind(null, module));
+  requestedBy = requestedBy.concat(module.name);
+  return loadModules(modules, modulePromises, resolve, module.dependencies, requestedBy)
+    .then(addModule.bind(null, module));
 }
 
-function moduleLoaded(modules, modulePromises, resolve, module) {
+function moduleLoaded(modules, modulePromises, resolve, module, requestedBy) {
   'use strict';
 
   var dependencies = module.dependencies;
-  return dependencies ?
-    addDependenciesAndModule(modules, modulePromises, resolve, module) :
+  if (dependencies) {
+    dependencies = dependencies.filter(function(dependencyName) {
+      return requestedBy.indexOf(dependencyName) === -1;
+    });
+  }
+  return dependencies && dependencies.length ?
+    addDependenciesAndModule(modules, modulePromises, resolve, module, requestedBy) :
     addModule(module, modules);
 }
 
-function modulePromise(modules, modulePromises, resolve, name) {
+function modulePromise(modules, modulePromises, resolve, name, requestedBy) {
   'use strict';
 
   return promiseFromNodeFunc(resolve, name)
     .then(function(module) {
-      return moduleLoaded(modules, modulePromises, resolve, module);
+      return moduleLoaded(modules, modulePromises, resolve, module, requestedBy);
     });
 }
-function loadModule(modules, modulePromises, resolve, name) {
+function loadModule(modules, modulePromises, resolve, name, requestedBy) {
   'use strict';
 
   if (!modulePromises.hasOwnProperty(name)) {
     return modulePromises[name] =
-      modulePromise(modules, modulePromises, resolve, name);
+      modulePromise(modules, modulePromises, resolve, name, requestedBy);
   } else {
     return modulePromises[name];
   }
