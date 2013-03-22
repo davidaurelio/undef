@@ -3,6 +3,7 @@ var format = require('util').format;
 
 require('./assertions').addAll(buster.assertions);
 var serializeModules = require('../src/serialize-modules').serializeModules;
+var assert = buster.assert;
 
 function moduleToString() {
   var dependencies = this.dependencies;
