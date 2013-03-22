@@ -19,8 +19,9 @@ function serializeModules(entryPointName, resolve, callback) {
 function promiseFromModuleNames(modules, modulePromises, resolve, names) {
   'use strict';
 
-  var promiseFromName = loadModule.bind(null, modules, modulePromises, resolve);
-  return Q.all(names.map(promiseFromName)).get(0);
+  return Q.all(names.map(function(name) {
+    return loadModule(modules, modulePromises, resolve, name);
+  })).get(0);
 }
 
 function addModule(module, modules) {
