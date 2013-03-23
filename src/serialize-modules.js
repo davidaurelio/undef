@@ -1,5 +1,4 @@
 var Q = require('q');
-var promiseFromNodeFunc = Q.nfcall;
 
 exports.serializeModules = serializeModules;
 
@@ -14,7 +13,7 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
 
-  loadModule([], {}, resolve, entryPointName, []).then(callback);
+  loadModule([], {}, Q.denodeify(resolve), entryPointName, []).then(callback);
 }
 
 function loadModules(modules, modulePromises, resolve, names, requestedBy) {
@@ -57,7 +56,7 @@ function moduleLoaded(modules, modulePromises, resolve, module, requestedBy) {
 function modulePromise(modules, modulePromises, resolve, name, requestedBy) {
   'use strict';
 
-  return promiseFromNodeFunc(resolve, name)
+  return resolve(name)
     .then(function(module) {
       return moduleLoaded(modules, modulePromises, resolve, module, requestedBy);
     });
