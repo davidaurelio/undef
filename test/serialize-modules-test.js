@@ -16,6 +16,7 @@ function unresolvableError() {
 }
 
 function createResolve(stub, modules) {
+  stub.callsArgWith(1, unresolvableError());
   for (var i = 0, len = modules.length; i < len; i += 1) {
     var module = modules[i];
     stub.withArgs(module.name).callsArgWithAsync(1, null, module);
@@ -134,6 +135,17 @@ buster.testCase('serializeModules', {
       }
 
       serializeModules('inresolvable/module', resolve, function(error) {
+        refute.isNull(error);
+        done();
+      });
+    },
+
+    'the callback should be invoked with an error if a dependency cannot be resolved': function(done) {
+      var moduleA = createModule('entry/module', ['first/dependency']);
+      var moduleB = createModule('first/dependency', ['missing/dependency']);
+      var resolve = createResolve(this.stub(), [moduleA, moduleB]);
+
+      serializeModules(moduleA.name, resolve, function(error) {
         refute.isNull(error);
         done();
       });

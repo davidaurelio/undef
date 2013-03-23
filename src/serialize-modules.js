@@ -16,12 +16,16 @@ function serializeModules(entryPointName, resolve, callback) {
   loadModule([], {}, Q.denodeify(resolve), entryPointName, []).nodeify(callback);
 }
 
+function id(o) {
+  return o;
+}
+
 function loadModules(modules, modulePromises, resolve, names, requestedBy) {
   'use strict';
 
   return Q.all(names.map(function(name) {
     return loadModule(modules, modulePromises, resolve, name, requestedBy);
-  })).get(0);
+  })).spread(id);
 }
 
 function addModule(module, modules) {
