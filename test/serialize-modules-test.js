@@ -154,22 +154,19 @@ buster.testCase('serializeModules', {
 });
 
 function testModules(entryModuleName, modules) {
-  function serialize(stub, callback) {
-    serializeModules(entryModuleName, createResolve(stub, modules), callback);
-  }
   var modulesMap = mapFromModules(modules);
 
   return {
     'should create a serialization that contains each module exactly once': function(done) {
-      serialize(this.stub(), function(error, result) {
+      serializeModules(entryModuleName, createResolve(this.stub(), modules), function(error, result) {
         modules.forEach(function(module) {
           assert.containsOnce(result, module);
         });
         done();
-      })
+      });
     },
     'should contain all dependencies in the correct order': function(done) {
-      serialize(this.stub(), function(error, result) {
+      serializeModules(entryModuleName, createResolve(this.stub(), modules), function(error, result) {
         modules
           .filter(hasDependencies)
           .forEach(function(module) {
@@ -180,7 +177,7 @@ function testModules(entryModuleName, modules) {
               });
           });
         done();
-      })
+      });
     }
   }
 }
