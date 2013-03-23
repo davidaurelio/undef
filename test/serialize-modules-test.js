@@ -3,12 +3,16 @@ var format = require('util').format;
 
 require('./assertions').addAll(buster.assertions);
 var serializeModules = require('../src/serialize-modules').serializeModules;
-var assert = buster.assert;
+var assert = buster.assert, refute = buster.refute;
 
 function moduleToString() {
   var dependencies = this.dependencies;
   dependencies = dependencies ? format(' (%s)', dependencies.join(', ')) : '';
   return format('<module %s%s>', this.name, dependencies);
+}
+
+function unresolvableError() {
+  return Error('cannot resolve module');
 }
 
 function createResolve(stub, modules) {
@@ -116,6 +120,21 @@ buster.testCase('serializeModules', {
 
       serializeModules(nameA, resolve, function(error, modules) {
         assert.equals(modules, [moduleC, moduleB, moduleA]);
+        done();
+      });
+    }
+  },
+
+  'inexistend modules:': {
+    'the callback should be invoked with an error if the entry module cannot be resolved': function(done) {
+      function resolve(_, callback) {
+        process.nextTick(function() {
+          callback(unresolvableError());
+        });
+      }
+
+      serializeModules('inresolvable/module', resolve, function(error) {
+        refute.isNull(error);
         done();
       });
     }
