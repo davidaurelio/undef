@@ -46,7 +46,7 @@ buster.testCase('serializeModules', {
       var entryModule = createModule(entryModuleName);
       var resolve = createResolve(this.stub(), [entryModule]);
 
-      serializeModules(entryModuleName, resolve, function(modules) {
+      serializeModules(entryModuleName, resolve, function(error, modules) {
         assert.equals(modules, [entryModule]);
         done();
       });
@@ -70,7 +70,7 @@ buster.testCase('serializeModules', {
       var dependencyModule = createModule('dependency/module');
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-      serializeModules(entryModule.name, resolve, function(modules) {
+      serializeModules(entryModule.name, resolve, function(error, modules) {
         assert.equals(modules, [dependencyModule, entryModule]);
         done();
       });
@@ -101,7 +101,7 @@ buster.testCase('serializeModules', {
       var moduleB = createModule(nameB, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules(nameA, resolve, function(modules) {
+      serializeModules(nameA, resolve, function(error, modules) {
         assert.equals(modules, [moduleB, moduleA]);
         done();
       });
@@ -114,7 +114,7 @@ buster.testCase('serializeModules', {
       var moduleC = createModule(nameC, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB, moduleC]);
 
-      serializeModules(nameA, resolve, function(modules) {
+      serializeModules(nameA, resolve, function(error, modules) {
         assert.equals(modules, [moduleC, moduleB, moduleA]);
         done();
       });
@@ -130,7 +130,7 @@ function testModules(entryModuleName, modules) {
 
   return {
     'should create a serialization that contains each module exactly once': function(done) {
-      serialize(this.stub(), function(result) {
+      serialize(this.stub(), function(error, result) {
         modules.forEach(function(module) {
           assert.containsOnce(result, module);
         });
@@ -138,7 +138,7 @@ function testModules(entryModuleName, modules) {
       })
     },
     'should contain all dependencies in the correct order': function(done) {
-      serialize(this.stub(), function(result) {
+      serialize(this.stub(), function(error, result) {
         modules
           .filter(hasDependencies)
           .forEach(function(module) {

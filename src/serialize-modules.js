@@ -13,7 +13,7 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointName, resolve, callback) {
   'use strict';
 
-  loadModule([], {}, Q.denodeify(resolve), entryPointName, []).then(callback);
+  loadModule([], {}, Q.denodeify(resolve), entryPointName, []).nodeify(callback);
 }
 
 function loadModules(modules, modulePromises, resolve, names, requestedBy) {
