@@ -65,9 +65,9 @@ function loadModule(modules, modulePromises, resolve, name, requestedBy) {
   'use strict';
 
   if (!modulePromises.hasOwnProperty(name)) {
-    return modulePromises[name] =
+    modulePromises[name] =
       modulePromise(modules, modulePromises, resolve, name, requestedBy);
-  } else {
-    return modulePromises[name];
   }
+
+  return modulePromises[name];
 }
