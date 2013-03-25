@@ -16,6 +16,10 @@ function serializeModules(entryPointName, resolve, callback) {
   loadModule([], {}, Q.denodeify(resolve), entryPointName, []).nodeify(callback);
 }
 
+function startsWith(haystack, needle) {
+  return haystack.lastIndexOf(needle, 0) === 0;
+}
+
 function id(o) {
   return o;
 }
@@ -67,6 +71,10 @@ function modulePromise(modules, modulePromises, resolve, name, requestedBy) {
 }
 function loadModule(modules, modulePromises, resolve, name, requestedBy) {
   'use strict';
+
+  if (startsWith(name, '../') || startsWith(name, './')) {
+    return Q.reject(Error('Relative module name passed'));
+  }
 
   if (!modulePromises.hasOwnProperty(name)) {
     modulePromises[name] =

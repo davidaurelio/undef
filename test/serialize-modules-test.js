@@ -150,6 +150,27 @@ buster.testCase('serializeModules', {
         done();
       });
     }
+  },
+
+  'relative module names': {
+    'an error should be returned if the entry module is relative': function(done) {
+      serializeModules('./a/relative/id', function() {}, function(error) {
+        assert(error);
+        done();
+      });
+    },
+
+    'an error should be returned if any dependency is relative': function(done) {
+      var nameA = 'entry/module', nameB = 'a/b';
+      var moduleA = createModule(nameA, [nameB]);
+      var moduleB = createModule(nameB, ['../relative/dependency']);
+      var resolve = createResolve(this.stub(), [moduleA, moduleB]);
+
+      serializeModules(nameA, resolve, function(error) {
+        assert(error);
+        done();
+      });
+    }
   }
 });
 
