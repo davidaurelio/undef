@@ -135,7 +135,7 @@ buster.testCase('serializeModules', {
       }
 
       serializeModules('inresolvable/module', resolve, function(error) {
-        refute.isNull(error);
+        assert(error);
         done();
       });
     },
@@ -146,7 +146,7 @@ buster.testCase('serializeModules', {
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
       serializeModules(moduleA.name, resolve, function(error) {
-        refute.isNull(error);
+        assert(error);
         done();
       });
     }
