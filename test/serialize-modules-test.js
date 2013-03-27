@@ -40,7 +40,7 @@ buster.testCase('serializeModules', {
       var entryModule = 'arbitrary/module';
       var resolve = createResolve(this.stub(), [createModule(entryModule)]);
 
-      serializeModules(entryModule, resolve, function() {
+      serializeModules([entryModule], resolve, function() {
         assert.calledWith(resolve, entryModule);
         done();
       });
@@ -51,7 +51,7 @@ buster.testCase('serializeModules', {
       var entryModule = createModule(entryModuleName);
       var resolve = createResolve(this.stub(), [entryModule]);
 
-      serializeModules(entryModuleName, resolve, function(error, modules) {
+      serializeModules([entryModuleName], resolve, function(error, modules) {
         assert.equals(modules, [entryModule]);
         done();
       });
@@ -64,7 +64,7 @@ buster.testCase('serializeModules', {
       var dependencyModule = createModule('a/dependency');
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-      serializeModules(entryModule.name, resolve, function() {
+      serializeModules([entryModule.name], resolve, function() {
         assert.calledWith(resolve, dependencyModule.name);
         done();
       });
@@ -75,7 +75,7 @@ buster.testCase('serializeModules', {
       var dependencyModule = createModule('dependency/module');
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-      serializeModules(entryModule.name, resolve, function(error, modules) {
+      serializeModules([entryModule.name], resolve, function(error, modules) {
         assert.equals(modules, [dependencyModule, entryModule]);
         done();
       });
@@ -83,7 +83,7 @@ buster.testCase('serializeModules', {
   },
 
   'more complex scenarios': {
-    'A tree of dependencies without repetitions': testModules('a', [
+    'A tree of dependencies without repetitions': testModules(['a'], [
       createModule('a', ['b', 'c']),
       createModule('b', ['d', 'e']),
       createModule('c', ['f', 'g']),
@@ -93,7 +93,7 @@ buster.testCase('serializeModules', {
       createModule('g')
     ]),
 
-    'A dependency diamond': testModules('a', [
+    'A dependency diamond': testModules(['a'], [
       createModule('a', ['b', 'c']),
       createModule('b', ['d']),
       createModule('c', ['d']),
@@ -106,7 +106,7 @@ buster.testCase('serializeModules', {
       var moduleB = createModule(nameB, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules(nameA, resolve, function(error, modules) {
+      serializeModules([nameA], resolve, function(error, modules) {
         assert.equals(modules, [moduleB, moduleA]);
         done();
       });
@@ -119,7 +119,7 @@ buster.testCase('serializeModules', {
       var moduleC = createModule(nameC, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB, moduleC]);
 
-      serializeModules(nameA, resolve, function(error, modules) {
+      serializeModules([nameA], resolve, function(error, modules) {
         assert.equals(modules, [moduleC, moduleB, moduleA]);
         done();
       });
@@ -152,7 +152,7 @@ buster.testCase('serializeModules', {
         });
       }
 
-      serializeModules('inresolvable/module', resolve, function(error) {
+      serializeModules(['inresolvable/module'], resolve, function(error) {
         assert(error);
         done();
       });
@@ -163,7 +163,7 @@ buster.testCase('serializeModules', {
       var moduleB = createModule('first/dependency', ['missing/dependency']);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules(moduleA.name, resolve, function(error) {
+      serializeModules([moduleA.name], resolve, function(error) {
         assert(error);
         done();
       });
@@ -172,7 +172,7 @@ buster.testCase('serializeModules', {
 
   'relative module names': {
     'an error should be returned if the entry module is relative': function(done) {
-      serializeModules('./a/relative/id', function() {}, function(error) {
+      serializeModules(['./a/relative/id'], function() {}, function(error) {
         assert(error);
         done();
       });
@@ -184,7 +184,7 @@ buster.testCase('serializeModules', {
       var moduleB = createModule(nameB, ['../relative/dependency']);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules(nameA, resolve, function(error) {
+      serializeModules([nameA], resolve, function(error) {
         assert(error);
         done();
       });

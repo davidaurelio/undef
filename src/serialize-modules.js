@@ -5,7 +5,7 @@ exports.serializeModules = serializeModules;
 /**
  * Serializes a module tree, starting from an entry point.
  *
- * @param {string|Array} entryPointNames The name of the entry point module.
+ * @param {Array} entryPointNames The names of the entry point modules.
  * @param {function(string, function(?Error, Module=))} resolve A callback to
  *    resolve functions
  * @param {function(Array)} callback
@@ -13,8 +13,7 @@ exports.serializeModules = serializeModules;
 function serializeModules(entryPointNames, resolve, callback) {
   'use strict';
 
-  var load = Array.isArray(entryPointNames) ? loadModules : loadModule;
-  load([], {}, Q.denodeify(resolve), entryPointNames, []).nodeify(callback);
+  loadModules([], {}, Q.denodeify(resolve), entryPointNames, []).nodeify(callback);
 }
 
 function startsWith(haystack, needle) {
