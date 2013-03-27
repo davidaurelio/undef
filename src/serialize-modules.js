@@ -20,10 +20,6 @@ function startsWith(haystack, needle) {
   return haystack.lastIndexOf(needle, 0) === 0;
 }
 
-function id(o) {
-  return o;
-}
-
 function load(resolve, entryPointNames) {
   var modules = [], modulePromises = {};
 
@@ -32,7 +28,7 @@ function load(resolve, entryPointNames) {
 
     return Q.all(names.map(function(name) {
       return loadModule(name, requestedBy);
-    })).spread(id);
+    })).thenResolve(modules);
   }
 
   function addModule(module) {
