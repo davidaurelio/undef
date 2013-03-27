@@ -126,6 +126,24 @@ buster.testCase('serializeModules', {
     }
   },
 
+  'multiple entry modules': {
+    'it should build the serialized tree correctly': testModules(['a', 'd', 'f'], [
+      createModule('a', ['b', 'c']),
+      createModule('b', ['j', 'k']),
+      createModule('c', ['h', 'i']),
+      createModule('d', ['e', 'b']),
+      createModule('e', ['l', 'm']),
+      createModule('f', ['g', 'c', 'b']),
+      createModule('g'),
+      createModule('h'),
+      createModule('i'),
+      createModule('j'),
+      createModule('k'),
+      createModule('l', ['b', 'i']),
+      createModule('m')
+    ])
+  },
+
   'inexistend modules:': {
     'the callback should be invoked with an error if the entry module cannot be resolved': function(done) {
       function resolve(_, callback) {
@@ -174,12 +192,12 @@ buster.testCase('serializeModules', {
   }
 });
 
-function testModules(entryModuleName, modules) {
+function testModules(entryModuleNames, modules) {
   var modulesMap = mapFromModules(modules);
 
   return {
     'should create a serialization that contains each module exactly once': function(done) {
-      serializeModules(entryModuleName, createResolve(this.stub(), modules), function(error, result) {
+      serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
         modules.forEach(function(module) {
           assert.containsOnce(result, module);
         });
@@ -187,7 +205,7 @@ function testModules(entryModuleName, modules) {
       });
     },
     'should contain all dependencies in the correct order': function(done) {
-      serializeModules(entryModuleName, createResolve(this.stub(), modules), function(error, result) {
+      serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
         modules
           .filter(hasDependencies)
           .forEach(function(module) {
