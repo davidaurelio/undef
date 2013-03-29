@@ -26,10 +26,8 @@ function createResolve(stub, modules) {
 
 function createModule(name, dependencies) {
   return {
-    type: 'module',
-    dependencies: dependencies,
     name: name,
-    ast: {},
+    dependencies: dependencies,
     toString: moduleToString
   };
 }
