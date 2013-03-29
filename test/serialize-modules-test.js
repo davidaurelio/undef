@@ -52,6 +52,7 @@ buster.testCase('serializeModules', {
       var resolve = createResolve(this.stub(), [entryModule]);
 
       serializeModules([entryModuleName], resolve, function(error, modules) {
+        refute(error);
         assert.equals(modules, [entryModule]);
         done();
       });
@@ -76,6 +77,7 @@ buster.testCase('serializeModules', {
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
       serializeModules([entryModule.name], resolve, function(error, modules) {
+        refute(error);
         assert.equals(modules, [dependencyModule, entryModule]);
         done();
       });
@@ -107,6 +109,7 @@ buster.testCase('serializeModules', {
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
       serializeModules([nameA], resolve, function(error, modules) {
+        refute(error);
         assert.equals(modules, [moduleB, moduleA]);
         done();
       });
@@ -120,6 +123,7 @@ buster.testCase('serializeModules', {
       var resolve = createResolve(this.stub(), [moduleA, moduleB, moduleC]);
 
       serializeModules([nameA], resolve, function(error, modules) {
+        refute(error);
         assert.equals(modules, [moduleC, moduleB, moduleA]);
         done();
       });
@@ -198,6 +202,7 @@ function testModules(entryModuleNames, modules) {
   return {
     'should create a serialization that contains each module exactly once': function(done) {
       serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
+        refute(error);
         modules.forEach(function(module) {
           assert.containsOnce(result, module);
         });
@@ -206,6 +211,7 @@ function testModules(entryModuleNames, modules) {
     },
     'should contain all dependencies in the correct order': function(done) {
       serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
+        refute(error);
         modules
           .filter(hasDependencies)
           .forEach(function(module) {
