@@ -8,7 +8,7 @@ exports.serializeModules = serializeModules;
  * @param {Array} entryPointNames The names of the entry point modules.
  * @param {function(string, function(?Error, Module=))} resolve A callback to
  *    resolve functions
- * @param {function(Array)} callback
+ * @param {function(Error, Array)} callback
  */
 function serializeModules(entryPointNames, resolve, callback) {
   'use strict';
