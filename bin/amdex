@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+var loadFile = require('../src/loadfile-node-fs').loadFile;
+var parse = require('../src/parse-esprima').parse;
+var createResolve = require('../src/resolve').createResolve;
+var serializeModules = require('../src/serialize-modules').serializeModules;
+var resolve = createResolve(loadFile, parse);
+
+function main(entryModuleName) {
+  serializeModules([entryModuleName], resolve, function(error, modules) {
+    if (error) { console.error(error); }
+    else { console.log(JSON.stringify(modules, null, 2)); }
+  });
+}
+
+main(process.argv[0]);
