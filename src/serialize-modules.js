@@ -42,8 +42,8 @@ function load(resolve, entryPointNames) {
     'use strict';
 
     requestedBy = requestedBy.concat(module.name);
-    return loadModules(module.dependencies, requestedBy)
-      .then(addModule.bind(null, module));
+    return loadModules(module.dependencies, requestedBy).
+      then(addModule.bind(null, module));
   }
 
   function moduleLoaded(module, requestedBy) {
@@ -63,8 +63,8 @@ function load(resolve, entryPointNames) {
   function modulePromise(name, requestedBy) {
     'use strict';
 
-    return resolve(name)
-      .then(function(module) {
+    return resolve(name).
+      then(function(module) {
         return moduleLoaded(module, requestedBy);
       });
   }
