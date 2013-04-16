@@ -29,25 +29,6 @@ buster.testCase('createResolve', {
   },
 
   'the created function': {
-    'passes the module id argument to the loader callback and adds the .js extension': function() {
-      var loadFile = this.spy();
-      var moduleId = 'arbitrary/id';
-      var resolve = createResolve(loadFile, nop);
-
-      resolve(moduleId, nop);
-      assert.calledWith(loadFile, moduleId + '.js');
-    },
-
-    'passes the source yielded by the load function to the parse function': function() {
-      var source = 'arbitrary source code';
-      var loadFile = this.stub().yields(null, source);
-      var parse = this.spy();
-      var resolve = createResolve(loadFile, parse);
-
-      resolve('arbitrary/id', nop);
-      assert.calledWith(parse, source);
-    },
-
     'passes any error yielded by loadFile to the original callback': function() {
       var fileLoadError = Error('arbitrary');
       var loadFile = this.stub().yields(fileLoadError);
@@ -69,11 +50,20 @@ buster.testCase('createResolve', {
     },
 
     'uses the ast returned by parse to create a module': function() {
+      var source = 'module source';
       var ast = fixtures.anonymousDefineObject;
       var moduleAst = ast.body[0].expression.arguments[0];
-      var parse = this.stub().yields(null, ast);
+
+      var loadFile = this.stub().
+        withArgs('arbitrary/id.js').yields(null, source).
+        yields(null, null);
+
+      var parse = this.stub().
+        withArgs(source).yields(null, ast).
+        yields(null, null);
+
       var callback = this.spy();
-      var resolve = createResolve(arbitraryLoadFile(this.stub()), parse);
+      var resolve = createResolve(loadFile, parse);
       var moduleId = 'arbitrary/id';
 
       resolve(moduleId, callback);
