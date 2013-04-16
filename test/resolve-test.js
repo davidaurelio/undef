@@ -1,27 +1,13 @@
 var buster = require('buster');
 require('./assertions').addAll(buster.assertions);
 
-var fixtures = {
-  anonymousDefineObject: require('./fixtures/anonymous-define-object.json')
-};
-
 var createResolve = require('../src/resolve').createResolve;
 var assert = buster.assert, refute = buster.refute;
 
-function nop() {}
-function arbitraryLoadFile(stub) {
-  return stub.yields(null, 'arbitrary source');
-}
-function arbitraryParse(stub) {
-  return stub.yields(null, {});
-}
-function createModule(name, ast) {
-  return {
-    name: name,
-    ast: ast,
-    dependencies: null
-  };
-}
+var fixtures = {
+  anonymousDefineObject: require('./fixtures/anonymous-define-object.json'),
+  anonymousWithDependencies: require('./fixtures/anonymous-define-dependencies.json')
+};
 
 buster.testCase('createResolve', {
   'creates a function': function() {
@@ -52,26 +38,82 @@ buster.testCase('createResolve', {
     },
 
     'uses the ast provided by parse to create a module': function(done) {
-      var source = 'module source';
-      var ast = fixtures.anonymousDefineObject;
-      var moduleAst = ast.body[0].expression.arguments[0];
+      var fixture = fixtures.anonymousDefineObject;
+      var moduleAst = fixture.ast.body[0].expression.arguments[0];
+      var moduleId = 'arbitrary/id';
 
       var loadFile = this.stub().
-        withArgs('arbitrary/id.js').yields(null, source).
+        withArgs(moduleId + '.js').yields(null, fixture.source).
         yields(null, null);
 
-      var parse = this.stub().
-        withArgs(source).yields(null, ast).
-        yields(null, null);
-
+      var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
-      var moduleId = 'arbitrary/id';
 
       resolve(moduleId, function(error, module) {
         refute(error);
         assert.equals(module, createModule(moduleId, moduleAst));
         done();
       });
+    },
+
+    'the created module has the correct dependencies array': function(done) {
+      var fixture = fixtures.anonymousWithDependencies;
+      var defineCall = fixture.ast.body[0].expression;
+      var dependencies = arrayFromAst(defineCall.arguments[0]);
+      var moduleAst = defineCall.arguments[1];
+      var moduleId = 'arbitrary/id';
+
+      var loadFile = this.stub().
+        withArgs(moduleId + '.js').yields(null, fixture.source).
+        yields(null, null);
+
+      var parse = createParseFixtures(this.stub());
+      var resolve = createResolve(loadFile, parse);
+
+      resolve(moduleId, function(error, module) {
+        refute(error);
+        assert.equals(module, createModule(moduleId, moduleAst, dependencies));
+        done();
+      });
     }
   }
 });
+
+
+function arbitraryLoadFile(stub) {
+  return stub.yields(null, 'arbitrary source');
+}
+
+function arbitraryParse(stub) {
+  return stub.yields(null, {});
+}
+
+function arrayFromAst(arrayExpression) {
+  var array = [], elements = arrayExpression.elements;
+  for (var i = 0, n = elements.length; i < n; i += 1) {
+    array[i] = elements[i].value;
+  }
+  return array;
+}
+
+function createModule(name, ast, dependencies) {
+  return {
+    name: name,
+    ast: ast,
+    dependencies: dependencies || null
+  };
+}
+
+function createParseFixtures(stub) {
+  stub.
+    yields(null, {});
+
+  for (var key in fixtures) {
+    var fixture = fixtures[key];
+    stub.withArgs(fixture.source).yields(null, fixture.ast);
+  }
+
+  return stub;
+}
+
+function nop() {}

@@ -1,0 +1,47 @@
+{
+  "source": "define(['foo', 'bar'], function() {})",
+  "ast": {
+   "type": "Program",
+    "body": [
+      {
+        "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
+            "name": "define"
+          },
+          "arguments": [
+            {
+              "type": "ArrayExpression",
+              "elements": [
+                {
+                  "type": "Literal",
+                  "value": "foo"
+                },
+                {
+                  "type": "Literal",
+                  "value": "bar"
+                }
+              ]
+            },
+            {
+              "type": "FunctionExpression",
+              "id": null,
+              "params": [],
+              "defaults": [],
+              "body": {
+                "type": "BlockStatement",
+                "body": []
+              },
+              "rest": null,
+              "generator": false,
+              "expression": false
+            }
+          ]
+        }
+      }
+    ]
+  }
+
+}
