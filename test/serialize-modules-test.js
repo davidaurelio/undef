@@ -34,16 +34,6 @@ function createModule(name, dependencies) {
 
 buster.testCase('serializeModules', {
   'a simple module without dependencies': {
-    'should request the entry module from the resolve function': function(done) {
-      var entryModule = 'arbitrary/module';
-      var resolve = createResolve(this.stub(), [createModule(entryModule)]);
-
-      serializeModules([entryModule], resolve, function() {
-        assert.calledWith(resolve, entryModule);
-        done();
-      });
-    },
-
     'should invoke the callback with an array containing the only module': function(done) {
       var entryModuleName = 'arbitrary/module';
       var entryModule = createModule(entryModuleName);
@@ -58,17 +48,6 @@ buster.testCase('serializeModules', {
   },
 
   'two modules, one pulled in as absolute dependency': {
-    'should request the dependency from the resolver': function(done) {
-      var entryModule = createModule('entry/module', ['a/dependency']);
-      var dependencyModule = createModule('a/dependency');
-      var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
-
-      serializeModules([entryModule.name], resolve, function() {
-        assert.calledWith(resolve, dependencyModule.name);
-        done();
-      });
-    },
-
     'should invoke the callback with the two modules, dependency first': function(done) {
       var entryModule = createModule('entry/module', ['dependency/module']);
       var dependencyModule = createModule('dependency/module');
