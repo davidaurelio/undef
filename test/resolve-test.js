@@ -15,7 +15,7 @@ function arbitraryLoadFile(stub) {
 function arbitraryParse(stub) {
   return stub.yields(null, {});
 }
-function module(name, ast) {
+function createModule(name, ast) {
   return {
     name: name,
     ast: ast,
@@ -29,27 +29,29 @@ buster.testCase('createResolve', {
   },
 
   'the created function': {
-    'passes any error yielded by loadFile to the original callback': function() {
+    'passes any error yielded by loadFile to the original callback': function(done) {
       var fileLoadError = Error('arbitrary');
       var loadFile = this.stub().yields(fileLoadError);
-      var callback = this.spy();
       var resolve = createResolve(loadFile, arbitraryParse(this.stub()));
 
-      resolve('arbitrary/id', callback);
-      assert.calledWith(callback, fileLoadError);
+      resolve('arbitrary/id', function(error) {
+        assert.equals(error, fileLoadError);
+        done();
+      });
     },
 
-    'passes any error yielded by parse to the original callback': function() {
+    'passes any error yielded by parse to the original callback': function(done) {
       var parseError = Error('arbitrary');
       var parse = this.stub().yields(parseError);
-      var callback = this.spy();
       var resolve = createResolve(arbitraryLoadFile(this.stub()), parse);
 
-      resolve('arbitrary/id', callback);
-      assert.calledWith(callback, parseError);
+      resolve('arbitrary/id', function(error) {
+        assert.equals(error, parseError);
+        done();
+      });
     },
 
-    'uses the ast returned by parse to create a module': function() {
+    'uses the ast provided by parse to create a module': function(done) {
       var source = 'module source';
       var ast = fixtures.anonymousDefineObject;
       var moduleAst = ast.body[0].expression.arguments[0];
@@ -62,12 +64,14 @@ buster.testCase('createResolve', {
         withArgs(source).yields(null, ast).
         yields(null, null);
 
-      var callback = this.spy();
       var resolve = createResolve(loadFile, parse);
       var moduleId = 'arbitrary/id';
 
-      resolve(moduleId, callback);
-      assert.calledWith(callback, null, module(moduleId, moduleAst));
+      resolve(moduleId, function(error, module) {
+        refute(error);
+        assert.equals(module, createModule(moduleId, moduleAst));
+        done();
+      });
     }
   }
 });
