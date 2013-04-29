@@ -6,7 +6,8 @@ var assert = buster.assert, refute = buster.refute;
 
 var fixtures = {
   anonymousDefineObject: require('./fixtures/anonymous-define-object.json'),
-  anonymousWithDependencies: require('./fixtures/anonymous-define-dependencies.json')
+  anonymousWithDependencies: require('./fixtures/anonymous-define-dependencies.json'),
+  anonymousWithRelativeDependencies: require('./fixtures/anonymous-define-relative-dependencies.json')
 };
 
 buster.testCase('createResolve', {
@@ -73,6 +74,24 @@ buster.testCase('createResolve', {
       resolve(moduleId, function(error, module) {
         refute(error);
         assert.equals(module, createModule(moduleId, moduleAst, dependencies));
+        done();
+      });
+    },
+
+    'relative dependencies of the module are made absolute': function(done) {
+      var fixture = fixtures.anonymousWithRelativeDependencies;
+      var moduleId = 'f/g/h/i';
+
+      var loadFile = this.stub().
+        withArgs(moduleId + '.js').yields(null, fixture.source).
+        yields(null, null);
+
+      var parse = createParseFixtures(this.stub());
+      var resolve = createResolve(loadFile, parse);
+
+      resolve(moduleId, function(error, module) {
+        refute(error);
+        assert.equals(module.dependencies, ['f/g/h/b', 'f/g/c/d']);
         done();
       });
     }
