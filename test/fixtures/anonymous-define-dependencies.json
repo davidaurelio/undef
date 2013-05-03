@@ -1,47 +1,27 @@
-{
-  "source": "define(['foo', 'bar'], function() {})",
+{ "source": "define(['foo', 'bar'], function() {})",
   "ast": {
-   "type": "Program",
+    "type": "Program",
     "body": [
-      {
-        "type": "ExpressionStatement",
+      { "type": "ExpressionStatement",
         "expression": {
           "type": "CallExpression",
           "callee": {
             "type": "Identifier",
-            "name": "define"
-          },
+            "name": "define" },
           "arguments": [
-            {
-              "type": "ArrayExpression",
+            { "type": "ArrayExpression",
               "elements": [
-                {
-                  "type": "Literal",
-                  "value": "foo"
-                },
-                {
-                  "type": "Literal",
-                  "value": "bar"
-                }
-              ]
-            },
-            {
-              "type": "FunctionExpression",
+                { "type": "Literal",
+                  "value": "foo" },
+                { "type": "Literal",
+                  "value": "bar" } ] },
+            { "type": "FunctionExpression",
               "id": null,
               "params": [],
               "defaults": [],
               "body": {
                 "type": "BlockStatement",
-                "body": []
-              },
+                "body": [] },
               "rest": null,
               "generator": false,
-              "expression": false
-            }
-          ]
-        }
-      }
-    ]
-  }
-
-}
+              "expression": false } ] } } ] } }

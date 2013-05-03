@@ -1,46 +1,27 @@
-{
-  "source": "define(['./b', '../c/d'], function() {})",
+{ "source": "define(['./b', '../c/d'], function() {})",
   "ast": {
     "type": "Program",
     "body": [
-      {
-        "type": "ExpressionStatement",
+      { "type": "ExpressionStatement",
         "expression": {
           "type": "CallExpression",
           "callee": {
             "type": "Identifier",
-            "name": "define"
-          },
+            "name": "define" },
           "arguments": [
-            {
-              "type": "ArrayExpression",
+            { "type": "ArrayExpression",
               "elements": [
-                {
-                  "type": "Literal",
-                  "value": "./b"
-                },
-                {
-                  "type": "Literal",
-                  "value": "../c/d"
-                }
-              ]
-            },
-            {
-              "type": "FunctionExpression",
+                { "type": "Literal",
+                  "value": "./b" },
+                { "type": "Literal",
+                  "value": "../c/d" } ] },
+            { "type": "FunctionExpression",
               "id": null,
               "params": [],
               "defaults": [],
               "body": {
                 "type": "BlockStatement",
-                "body": []
-              },
+                "body": [] },
               "rest": null,
               "generator": false,
-              "expression": false
-            }
-          ]
-        }
-      }
-    ]
-  }
-}
+              "expression": false } ] } } ] } }

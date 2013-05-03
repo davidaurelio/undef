@@ -1,21 +1,21 @@
 { "source": "define({ arbitrary: 'member' });",
-  "ast":
-  { "type": "Program",
-    "body":
-    [ { "type": "ExpressionStatement",
-        "expression":
-        { "type": "CallExpression",
-          "callee":
-          { "type": "Identifier",
+  "ast": {
+    "type": "Program",
+    "body": [
+      { "type": "ExpressionStatement",
+        "expression": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
             "name": "define" },
-          "arguments":
-          [ { "type": "ObjectExpression",
-              "properties":
-              [ { "type": "Property",
-                  "key":
-                  { "type": "Identifier",
+          "arguments": [
+            { "type": "ObjectExpression",
+              "properties": [
+                { "type": "Property",
+                  "key": {
+                    "type": "Identifier",
                     "name": "arbitrary" },
-                  "value":
-                  { "type": "Literal",
+                  "value": {
+                    "type": "Literal",
                     "value": "member" },
                   "kind": "init" } ] } ] } } ] } }
