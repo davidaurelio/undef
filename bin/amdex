@@ -13,4 +13,4 @@ function main(entryModuleName) {
   });
 }
 
-main(process.argv[0]);
+main(process.argv[2]);
