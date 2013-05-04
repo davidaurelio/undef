@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-var loadFile = require('../src/loadfile-node-fs').loadFile;
-var parse = require('../src/parse-esprima').parse;
+var loadFile = require('../src/loadfile/node-fs').loadFile;
+var parse = require('../src/parse/esprima').parse;
 var createResolve = require('../src/resolve').createResolve;
-var serializeModules = require('../src/serialize-modules').serializeModules;
+var serializeModules = require('../src/serialize').serializeModules;
 var resolve = createResolve(loadFile, parse);
 
 function main(entryModuleName) {
