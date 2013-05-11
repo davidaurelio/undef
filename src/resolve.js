@@ -52,7 +52,7 @@ function parseModuleAst(moduleId, astProgram) {
     astModule = first;
   }
   return {
-    name: moduleId,
+    id: moduleId,
     ast: astModule,
     dependencies: dependencies &&
       applyTo(partial(resolvePath, [moduleId]), dependencies)

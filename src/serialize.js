@@ -41,7 +41,7 @@ function load(resolve, entryPointNames) {
   function addDependenciesAndModule(module, requestedBy) {
     'use strict';
 
-    requestedBy = requestedBy.concat(module.name);
+    requestedBy = requestedBy.concat(module.id);
     return loadModules(module.dependencies, requestedBy).
       then(addModule.bind(null, module));
   }

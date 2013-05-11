@@ -115,12 +115,8 @@ function arrayFromAst(arrayExpression) {
   return array;
 }
 
-function createModule(name, ast, dependencies) {
-  return {
-    name: name,
-    ast: ast,
-    dependencies: dependencies || null
-  };
+function createModule(id, ast, dependencies) {
+  return {id: id, ast: ast, dependencies: dependencies || null};
 }
 
 function createParseFixtures(stub) {

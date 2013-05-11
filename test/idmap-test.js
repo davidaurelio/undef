@@ -24,13 +24,13 @@ buster.testCase('idmap', {
 
 
 function module(id) {
-  return {name: id};
+  return {id: id};
 }
 
 function idmap(modules) {
   if (!modules.length) return {};
 
   var map = {};
-  map[modules[0].name] = null;
+  map[modules[0].id] = null;
   return map;
 }

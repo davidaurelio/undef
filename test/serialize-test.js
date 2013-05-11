@@ -8,7 +8,7 @@ var assert = buster.assert, refute = buster.refute;
 function moduleToString() {
   var dependencies = this.dependencies;
   dependencies = dependencies ? format(' (%s)', dependencies.join(', ')) : '';
-  return format('<module %s%s>', this.name, dependencies);
+  return format('<module %s%s>', this.id, dependencies);
 }
 
 function unresolvableError() {
@@ -19,17 +19,13 @@ function createResolve(stub, modules) {
   stub.callsArgWith(1, unresolvableError());
   for (var i = 0, len = modules.length; i < len; i += 1) {
     var module = modules[i];
-    stub.withArgs(module.name).callsArgWithAsync(1, null, module);
+    stub.withArgs(module.id).callsArgWithAsync(1, null, module);
   }
   return stub;
 }
 
-function createModule(name, dependencies) {
-  return {
-    name: name,
-    dependencies: dependencies,
-    toString: moduleToString
-  };
+function createModule(id, dependencies) {
+  return {id: id, dependencies: dependencies, toString: moduleToString};
 }
 
 buster.testCase('serializeModules', {
@@ -53,7 +49,7 @@ buster.testCase('serializeModules', {
       var dependencyModule = createModule('dependency/module');
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-      serializeModules([entryModule.name], resolve, function(error, modules) {
+      serializeModules([entryModule.id], resolve, function(error, modules) {
         refute(error);
         assert.equals(modules, [dependencyModule, entryModule]);
         done();
@@ -144,7 +140,7 @@ buster.testCase('serializeModules', {
       var moduleB = createModule('first/dependency', ['missing/dependency']);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules([moduleA.name], resolve, function(error) {
+      serializeModules([moduleA.id], resolve, function(error) {
         assert(error);
         done();
       });
@@ -211,7 +207,7 @@ function lookup(property) {
 }
 function mapFromModules(modules) {
   return modules.reduce(function(modules, module) {
-    modules[module.name] = module;
+    modules[module.id] = module;
     return modules;
   }, {});
 }
