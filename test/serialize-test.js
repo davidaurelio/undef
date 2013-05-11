@@ -170,8 +170,6 @@ buster.testCase('serializeModules', {
 });
 
 function testModules(entryModuleNames, modules) {
-  var modulesMap = mapFromModules(modules);
-
   return {
     'should create a serialization that contains each module exactly once': function(done) {
       serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
@@ -189,7 +187,7 @@ function testModules(entryModuleNames, modules) {
           .filter(hasDependencies)
           .forEach(function(module) {
             module.dependencies
-              .map(lookup, modulesMap)
+              .map(moduleById.bind(null, modules))
               .forEach(function(dependency) {
                 assert.containsInOrder(result, dependency, module);
               });
@@ -199,15 +197,14 @@ function testModules(entryModuleNames, modules) {
     }
   }
 }
+
 function hasDependencies(module) {
   return !!(module.dependencies && module.dependencies.length);
 }
-function lookup(property) {
-  return this[property];
-}
-function mapFromModules(modules) {
-  return modules.reduce(function(modules, module) {
-    modules[module.id] = module;
-    return modules;
-  }, {});
+
+function moduleById(modules, id) {
+  for (var module, i = 0, n = modules.length; i < n; i += 1) {
+    module = modules[i];
+    if (module.id === id) { return module; }
+  }
 }
