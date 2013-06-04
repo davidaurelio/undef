@@ -1,5 +1,5 @@
 var buster = require('buster');
-require('./assertions').addAll(buster.assertions);
+require('buster-more-assertions');
 
 var idmap = require('../src/idmap');
 

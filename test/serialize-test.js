@@ -1,7 +1,7 @@
 var buster = require('buster');
+require('buster-more-assertions');
 var format = require('util').format;
 
-require('./assertions').addAll(buster.assertions);
 var serializeModules = require('../src/serialize').serializeModules;
 var assert = buster.assert, refute = buster.refute;
 
