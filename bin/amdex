@@ -1,15 +1,20 @@
 #!/usr/bin/env node
 
+var escodegen = require('escodegen');
+
 var loadFile = require('../src/loadfile/node-fs').loadFile;
 var parse = require('../src/parse/esprima').parse;
 var createResolve = require('../src/resolve').createResolve;
 var serializeModules = require('../src/serialize').serializeModules;
+var idmap = require('../src/idmap');
+var build = require('../src/build');
 var resolve = createResolve(loadFile, parse);
 
 function main(entryModuleName) {
   serializeModules([entryModuleName], resolve, function(error, modules) {
-    if (error) { console.error(error); }
-    else { console.log(JSON.stringify(modules, null, 2)); }
+    if (error) { return console.error(error); }
+    var ast = build(idmap(modules), modules);
+    console.log(escodegen.generate(ast));
   });
 }
 
