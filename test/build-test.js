@@ -53,20 +53,20 @@ buster.testCase('build', {
 
   'if a module factory is not a function, it is assigned to the correct variable': function() {
     var ast = {
-      type: "MemberExpression",
+      type: 'MemberExpression',
       computed: false,
-      object: { type: "Identifier", name: "Array" },
-      property: { type: "Identifier", name: "prototype" }
+      object: { type: 'Identifier', name: 'Array' },
+      property: { type: 'Identifier', name: 'prototype' }
     };
     var varName = '_1';
     var idMap = {'a/b/c': varName}, modules = [module('a/b/c', ast)];
     var body = getBody(build(idMap, modules));
     assert.containsEqual(body, {
-      type: "ExpressionStatement",
+      type: 'ExpressionStatement',
       expression: {
-        type: "AssignmentExpression",
-        operator: "=",
-        left: { type: "Identifier", name: varName },
+        type: 'AssignmentExpression',
+        operator: '=',
+        left: { type: 'Identifier', name: varName },
         right: ast
       }
     });
@@ -74,34 +74,55 @@ buster.testCase('build', {
 
   'if a module factory is a function, the result of it\'s invocation is assigned to the correct variable': function() {
     var ast = {
-      type: "FunctionExpression",
+      type: 'FunctionExpression',
       id: null,
       params: [],
       body: {
-        type: "BlockStatement",
+        type: 'BlockStatement',
         body: [
-          { type: "ReturnStatement",
-            argument: { type: "Identifier", name: "arbitrary" } } ] }
+          { type: 'ReturnStatement',
+            argument: { type: 'Identifier', name: 'arbitrary' } } ] }
     };
     var varName = 'arbitrary';
     var idMap = {'an/id': varName}, modules = [module('an/id', ast)];
     var body = getBody(build(idMap, modules));
     var callExpression = {
-      type: "CallExpression",
+      type: 'CallExpression',
       callee: ast,
       arguments: []
     };
 
     assert.containsEqual(body, {
-      type: "ExpressionStatement",
+      type: 'ExpressionStatement',
       expression: {
-        type: "AssignmentExpression",
-        operator: "=",
-        left: { type: "Identifier", name: varName },
+        type: 'AssignmentExpression',
+        operator: '=',
+        left: { type: 'Identifier', name: varName },
         right: callExpression
       }
     });
   },
-  
-  'modules factories with dependencies get the dependencies passed in': function() {}
+
+  'modules factories with dependencies get the dependencies passed in': function() {
+    var moduleA = { type: 'BlockStatement', body: [] };
+    var moduleB = {
+      type: 'FunctionExpression',
+      id: null,
+      params: [ [Object] ],
+      body: { type: 'BlockStatement', body: [] }
+    };
+    var idMap = {a: 'a', b: 'b'};
+    var modules = [module('a', moduleA), module('b', moduleB, ['a'])];
+    var body = getBody(build(idMap, modules));
+    assert.containsEqual(body, { type: 'ExpressionStatement',
+      expression:
+      { type: 'AssignmentExpression',
+        operator: '=',
+        left: { type: 'Identifier', name: 'b' },
+        right:
+        { type: 'CallExpression',
+          callee: moduleB,
+          arguments: [ { type: 'Identifier', name: 'a' } ] } }
+    });
+  }
 });

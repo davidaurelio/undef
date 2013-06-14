@@ -8,7 +8,11 @@ module.exports = function(idmap, modules) {
   var body = [idDeclaration].concat(modules.map(function(module) {
     var ast = module.ast;
     if (ast.type === 'FunctionExpression') {
-      ast = callExpression(ast);
+      var dependencies = module.dependencies;
+      if (dependencies) {
+        dependencies = dependencies.map(pluck.bind(null, idmap));
+      }
+      ast = callExpression(ast, dependencies);
     }
     return varAssignment(idmap[module.id], ast);
   }));
@@ -25,30 +29,35 @@ function values(object) {
 
 function pluck(object, key) { return object[key]; }
 
+function identifier(name) {
+  return {type: 'Identifier', name: name};
+}
+
 function declarator(name) {
   return {
     type: 'VariableDeclarator',
-    id: {type: 'Identifier', name: name},
+    id: identifier(name),
     init: null
   };
 }
 
 function expressionStatement(expression) {
   return {
-    type: "ExpressionStatement",
+    type: 'ExpressionStatement',
     expression: expression
   };
 }
 
 function varAssignment(name, value) {
   return expressionStatement({
-    type: "AssignmentExpression",
-    operator: "=",
-    left: { type: "Identifier", name: name },
+    type: 'AssignmentExpression',
+    operator: '=',
+    left: identifier(name),
     right: value
   });
 }
 
-function callExpression(callee) {
-  return { type: "CallExpression", callee: callee, arguments: [] };
+function callExpression(callee, argNames) {
+  var args = argNames ? argNames.map(identifier) : [];
+  return { type: 'CallExpression', callee: callee, arguments: args };
 }
