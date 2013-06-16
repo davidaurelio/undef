@@ -5,6 +5,6 @@ exports.amdxform = {
     'src/*.js'
   ],
   tests: [
-    'test/*-test.js'
+    'test/**/*-test.js'
   ]
 };
