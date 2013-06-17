@@ -1,4 +1,4 @@
-exports.amdxform = {
+exports.undef = {
   env: 'node',
   rootPath: '../',
   sources: [
