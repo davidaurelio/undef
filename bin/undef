@@ -1,21 +1,110 @@
 #!/usr/bin/env node
 
-var escodegen = require('escodegen');
+// ------------------------------------------------------------ CLI DEPENDENCIES
+var Q = require('q');
+var cliffold = require('cliffold');
+var validators = cliffold.validators;
+var path = require('path');
 
+// -------------------------------------------------------- PROGRAM DEPENDENCIES
+var fs = require('fs');
+var escodegen = require('escodegen');
+var prefixingLoadFile = require('../src/loadfile/prefixing');
 var loadFile = require('../src/loadfile/node-fs').loadFile;
 var parse = require('../src/parse/esprima').parse;
 var createResolve = require('../src/resolve').createResolve;
 var serializeModules = require('../src/serialize').serializeModules;
 var idmap = require('../src/idmap');
 var build = require('../src/build');
-var resolve = createResolve(loadFile, parse);
 
-function main(entryModuleName) {
+// ------------------------------------------------------------------- CLI SETUP
+var stderr = process.stderr, stdout = process.stdout;
+var cli = new cliffold.Cli(stderr);
+cli.opd('moduleid', {
+  description: 'The id of the entry module',
+  validators: [validators.required()]
+});
+
+cli.opt('-d', '--basedir', {
+  defaultValue: process.cwd(),
+  description: 'the base path to use for module resolution. Defaults to the ' +
+    'current working directory.',
+  hasValue: true,
+  validators: [validators.directory('${1} must be a directory')]
+});
+
+cli.opt('-p', '--paths', {
+  description: 'paths for individual modules. Accepts a comma-separated list ' +
+    'of mappings, e.g. -paths=foo=else/where,bar/baz=somewhere/else. ' +
+    'Paths are resolved relative to the current working directory, ' +
+    'not to --basedir.',
+  defaultValue: '',
+  validators: [function(opt) {
+    return Q.all(opt.value.split(',').map(function(spec) {
+      return validators.directory()({
+        value: spec.split('=')[1],
+        signature: '-p/--paths'
+      });
+    }));
+  }],
+  transform: function(paths) {
+    return paths.split(',').reduce(function(paths, assignment) {
+      var bits = assignment.split('=');
+      paths[bits[0]] = path.resolve(bits[1]);
+      return paths;
+    }, {});
+  }
+});
+
+cli.opt('-o', '--output', {
+  defaultValue: '-',
+  description: 'write output to this file instead of stdout',
+  transform: function(fileName) {
+    return fileName === '-' ? stdout : fs.createWriteStream(fileName);
+  }
+});
+
+cli.helpOpt('-h', '--help', {
+  name: 'Usage: undef [options] moduleid'
+});
+
+
+// --------------------------------------------------------------------- RUN CLI
+cli.exec(process.argv.slice(2), process.env, function(error, cliProcess) {
+  if (error) {
+    writeln(stderr, cli.formatHelp());
+
+    if (!Array.isArray(error)) {
+      error = [error];
+    }
+    writeln(stderr, error.join('\n'));
+    return process.exit(1);
+  }
+  else if (cliProcess.isHandled) { // help has been printed
+    return process.exit(1);
+  }
+
+  var entryModuleName = cliProcess.arg('moduleid');
+  var output = cliProcess.arg('--output');
+
+  var base = cliProcess.arg('--basedir');
+  var paths = cliProcess.arg('--paths');
+  var resolve = createResolve(prefixingLoadFile(loadFile, base, paths), parse);
   serializeModules([entryModuleName], resolve, function(error, modules) {
-    if (error) { return console.error(error); }
-    var ast = build(idmap(modules), modules);
-    console.log(escodegen.generate(ast));
-  });
-}
+    try {
+      if (error) { throw error; }
 
-main(process.argv[2]);
+      var ast = build(idmap(modules), modules);
+      writeln(output, escodegen.generate(ast));
+    }
+    catch (error) {
+      writeln(stderr, error.message || error);
+      process.exit(2);
+    }
+  });
+});
+
+function writeln(stream, data) {
+  stream.write(data);
+  stream.write('\n');
+}

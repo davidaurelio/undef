@@ -1,8 +1,8 @@
 {
   "name": "undef",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha1",
   "description": "",
-  "main": "src",
+  "bin": "bin/undef",
   "scripts": {
     "test": "buster test"
   },
@@ -12,10 +12,14 @@
   "dependencies": {
     "q": "~0.9.2",
     "esprima": "~1.0.2",
-    "escodegen": "0.0.22"
+    "escodegen": "~0.0.22",
+    "cliffold": "~0.3.0"
   },
   "devDependencies": {
     "buster": "~0.6.12",
     "buster-more-assertions": "~0.1.1-2"
+  },
+  "engines": {
+    "node": ">=0.8.0"
   }
 }
