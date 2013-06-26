@@ -1,4 +1,4 @@
-  # undef – builder for AMD JavaScript projects
+# undef – builder for AMD JavaScript projects
 
 *undef* is a builder for AMD based JavaScript projects. It strips `define`
 calls from the source files and combines all modules into a single file.
