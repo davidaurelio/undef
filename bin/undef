@@ -40,11 +40,13 @@ cli.opt('-p', '--paths', {
     }));
   }],
   transform: function(paths) {
-    return paths.split(',').reduce(function(paths, assignment) {
-      var bits = assignment.split('=');
-      paths[bits[0]] = path.resolve(bits[1]);
-      return paths;
-    }, {});
+    return !paths.length ?
+      null :
+      paths.split(',').reduce(function(paths, assignment) {
+       var bits = assignment.split('=');
+       paths[bits[0]] = path.resolve(bits[1]);
+       return paths;
+      }, {});
   }
 });
 
