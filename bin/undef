@@ -1,21 +1,13 @@
 #!/usr/bin/env node
 
+var undef = require('../src/undef');
+
 // ------------------------------------------------------------ CLI DEPENDENCIES
 var Q = require('q');
 var cliffold = require('cliffold');
 var validators = cliffold.validators;
 var path = require('path');
-
-// -------------------------------------------------------- PROGRAM DEPENDENCIES
 var fs = require('fs');
-var escodegen = require('escodegen');
-var prefixingLoadFile = require('../src/loadfile/prefixing');
-var loadFile = require('../src/loadfile/node-fs').loadFile;
-var parse = require('../src/parse/esprima').parse;
-var createResolve = require('../src/resolve').createResolve;
-var serializeModules = require('../src/serialize').serializeModules;
-var idmap = require('../src/idmap');
-var build = require('../src/build');
 
 // ------------------------------------------------------------------- CLI SETUP
 var stderr = process.stderr, stdout = process.stdout;
@@ -89,17 +81,13 @@ cli.exec(process.argv.slice(2), process.env, function(error, cliProcess) {
 
   var base = cliProcess.arg('--basedir');
   var paths = cliProcess.arg('--paths');
-  var resolve = createResolve(prefixingLoadFile(loadFile, base, paths), parse);
-  serializeModules([entryModuleName], resolve, function(error, modules) {
-    try {
-      if (error) { throw error; }
 
-      var ast = build(idmap(modules), modules);
-      writeln(output, escodegen.generate(ast));
-    }
-    catch (error) {
+  undef([entryModuleName], base, paths, function(error, source) {
+    if (error) {
       writeln(stderr, error.message || error);
       process.exit(2);
+    } else {
+      writeln(output, source);
     }
   });
 });

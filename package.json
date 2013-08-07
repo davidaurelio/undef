@@ -9,6 +9,7 @@
     "test": "buster test"
   },
   "preferGlobal": true,
+  "main": "src/undef",
   "repository": {
     "type": "git",
     "url": "git://github.com/davidaurelio/undef.git"
