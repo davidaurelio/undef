@@ -1,6 +1,6 @@
 {
   "name": "undef",
-  "version": "0.1.0-alpha1",
+  "version": "0.1.0-alpha2",
   "description": "undef is a builder for AMD based JavaScript projects. It strips 'define' calls from the source files and combines all modules into a single file.",
   "bin": {
     "undef": "bin/undef"
