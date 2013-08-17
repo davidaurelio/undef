@@ -1,4 +1,5 @@
 var Q = require('q');
+var partial = require('./util').partial;
 
 exports.createResolve = createResolve;
 
@@ -21,16 +22,6 @@ function createResolve(loadFile, parse) {
       then(partial(parseModuleAst, [moduleId])).
       nodeify(callback);
   };
-}
-
-function partial(fn, args) {
-  var n = args.length;
-  return function() {
-    args.push.apply(args, arguments);
-    var result = fn.apply(this, args);
-    args.length = n;
-    return result;
-  }
 }
 
 function applyTo(fn, sequence) {

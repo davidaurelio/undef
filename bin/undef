@@ -58,6 +58,11 @@ cli.opt('-o', '--output', {
   }
 });
 
+cli.opt('-g', '--graphviz', {
+  description: 'output a graph description in graphviz language instead of ' +
+    'source code'
+});
+
 cli.helpOpt('-h', '--help', {
   name: 'Usage: undef [options] moduleid'
 });
@@ -84,7 +89,8 @@ cli.exec(process.argv.slice(2), process.env, function(error, cliProcess) {
   var base = cliProcess.arg('--basedir');
   var paths = cliProcess.arg('--paths');
 
-  undef([entryModuleName], base, paths, function(error, source) {
+  var job = cliProcess.values['--graphviz'].isSet ? undef.toGraphviz : undef;
+  job([entryModuleName], base, paths, function(error, source) {
     if (error) {
       writeln(stderr, error.message || error);
       process.exit(2);
