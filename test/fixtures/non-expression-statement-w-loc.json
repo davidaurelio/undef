@@ -1,0 +1,21 @@
+{ "source": "\n    var unexpected = 'arbitrary';",
+  "ast": {
+    "type": "Program",
+    "body": [
+      { "type": "VariableDeclaration",
+        "declarations": [
+          { "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "unexpected" },
+            "init": {
+              "type": "Identifier",
+              "name": "arbitrary" } } ],
+        "kind": "var",
+        "loc": {
+          "start": {
+            "line": 2,
+            "column": 4 },
+          "end": {
+            "line": 2,
+            "column": 31 } } } ] } }

@@ -7,7 +7,9 @@ var assert = buster.assert, refute = buster.refute;
 var fixtures = {
   anonymousDefineObject: require('./fixtures/anonymous-define-object.json'),
   anonymousWithDependencies: require('./fixtures/anonymous-define-dependencies.json'),
-  anonymousWithRelativeDependencies: require('./fixtures/anonymous-define-relative-dependencies.json')
+  anonymousWithRelativeDependencies: require('./fixtures/anonymous-define-relative-dependencies.json'),
+  nonExpressionStatement: require('./fixtures/non-expression-statement.json'),
+  nonExpressionStatementWithLoc: require('./fixtures/non-expression-statement-w-loc.json')
 };
 
 buster.testCase('createResolve', {
@@ -41,9 +43,7 @@ buster.testCase('createResolve', {
       var moduleAst = fixture.ast.body[0].expression.arguments[0];
       var moduleId = 'arbitrary/id';
 
-      var loadFile = this.stub().
-        withArgs(moduleId + '.js').yields(null, fixture.source).
-        yields(null, null);
+      var loadFile = createLoadStub(this.stub(), moduleId, fixture);
 
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
@@ -61,9 +61,7 @@ buster.testCase('createResolve', {
       var moduleAst = defineCall.arguments[1];
       var moduleId = 'arbitrary/id';
 
-      var loadFile = this.stub().
-        withArgs(moduleId + '.js').yields(null, fixture.source).
-        yields(null, null);
+      var loadFile = createLoadStub(this.stub(), moduleId, fixture);
 
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
@@ -77,10 +75,7 @@ buster.testCase('createResolve', {
     'relative dependencies of the module are made absolute': function(done) {
       var fixture = fixtures.anonymousWithRelativeDependencies;
       var moduleId = 'f/g/h/i';
-
-      var loadFile = this.stub().
-        withArgs(moduleId + '.js').yields(null, fixture.source).
-        yields(null, null);
+      var loadFile = createLoadStub(this.stub(), moduleId, fixture);
 
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
@@ -89,10 +84,45 @@ buster.testCase('createResolve', {
         refute(error);
         assert.equals(module.dependencies, ['f/g/h/b', 'f/g/c/d']);
       }));
+    },
+
+    'returns an appropriate error with module id if a non-expression statement is encountered': function(done) {
+      var fixture = fixtures.nonExpressionStatement;
+      var moduleId = 'some/arbitrary/id';
+      var loadFile = createLoadStub(this.stub(), moduleId, fixture);
+
+      var parse = createParseFixtures(this.stub());
+      var resolve = createResolve(loadFile, parse);
+
+      resolve(moduleId, done(checkError(moduleId)));
+    },
+
+    'uses location information of the parse tree to create error messages': function(done) {
+      var fixture = fixtures.nonExpressionStatementWithLoc;
+      var line = fixture.ast.body[0].loc.start.line;
+      var column = fixture.ast.body[0].loc.start.column;
+      var moduleId = 'arbitrary/module';
+      var loadFile = createLoadStub(this.stub(), moduleId, fixture);
+
+      var parse = createParseFixtures(this.stub());
+      var resolve = createResolve(loadFile, parse);
+
+      resolve(moduleId, done(function(error) {
+        assert.containsString(error, moduleId + ':' + line);
+
+        var sourceLine = lines(fixture.source)[line - 1];
+        assert.containsString(error, sourceLine.slice(column, 30));
+      }));
     }
   }
 });
 
+function checkError(moduleId) {
+  return function(error) {
+    assert.match(error, /unexpected input/i);
+    assert.containsString(error, moduleId);
+  };
+}
 
 function arbitraryLoadFile(stub) {
   return stub.yields(null, 'arbitrary source');
@@ -124,6 +154,16 @@ function createParseFixtures(stub) {
   }
 
   return stub;
+}
+
+function createLoadStub(stub, moduleId, fixture) {
+  return stub.withArgs(moduleId + '.js').
+    yields(null, fixture.source).
+    yields(null, null);
+}
+
+function lines(string) {
+  return string.split(/\r?\n/);
 }
 
 function nop() {}

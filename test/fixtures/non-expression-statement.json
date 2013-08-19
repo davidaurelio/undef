@@ -1,0 +1,14 @@
+{ "source": "var unexpected = null;",
+  "ast": {
+    "type": "Program",
+    "body": [
+      { "type": "VariableDeclaration",
+        "declarations": [
+          { "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "unexpected" },
+            "init": {
+              "type": "Identifier",
+              "name": "arbitrary" } } ],
+        "kind": "var" } ] } }

@@ -1,5 +1,7 @@
 var Q = require('q');
-var partial = require('./util').partial;
+var util = require('./util');
+var keypath = util.keypath;
+var partial = util.partial;
 
 exports.createResolve = createResolve;
 
@@ -12,14 +14,20 @@ function createResolve(loadFile, parse) {
   loadFile = Q.denodeify(loadFile);
   parse = Q.denodeify(parse);
 
+  function parseSource(source) {
+    return parse(source).then(function(ast) {
+      return [ast, source];
+    })
+  }
+
   /**
    * @param {string} moduleId
    * @param {function(Error, object)} callback
    */
   return function(moduleId, callback) {
     loadFile(moduleId + '.js').
-      then(parse).
-      then(partial(parseModuleAst, [moduleId])).
+      then(parseSource).
+      spread(partial(parseModuleAst, [moduleId])).
       nodeify(callback);
   };
 }
@@ -31,8 +39,23 @@ function applyTo(fn, sequence) {
   return sequence;
 }
 
-function parseModuleAst(moduleId, astProgram) {
-  var args = astProgram.body[0].expression.arguments;
+function parseModuleAst(moduleId, astProgram, source) {
+  var firstStatement = astProgram.body[0];
+  if (firstStatement.type !== 'ExpressionStatement') {
+    var location = moduleId;
+    var line = keypath(firstStatement, 'loc', 'start', 'line');
+    var column = keypath(firstStatement, 'loc', 'start', 'column');
+    if (line) {
+      location += ':' + line;
+      if (column) {
+        location += source.split(/\r?\n/)[line - 1].slice(column, 30);
+      }
+    }
+
+    throw TypeError('Unexpected input in module ' + location);
+  }
+
+  var args = firstStatement.expression.arguments;
   var first = args[0], second = args[1];
 
   var astModule, dependencies = null;
