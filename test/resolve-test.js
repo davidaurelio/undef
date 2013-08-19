@@ -21,10 +21,9 @@ buster.testCase('createResolve', {
       var loadFile = this.stub().yields(fileLoadError);
       var resolve = createResolve(loadFile, arbitraryParse(this.stub()));
 
-      resolve('arbitrary/id', function(error) {
+      resolve('arbitrary/id', done(function(error) {
         assert.equals(error, fileLoadError);
-        done();
-      });
+      }));
     },
 
     'passes any error yielded by parse to the original callback': function(done) {
@@ -32,10 +31,9 @@ buster.testCase('createResolve', {
       var parse = this.stub().yields(parseError);
       var resolve = createResolve(arbitraryLoadFile(this.stub()), parse);
 
-      resolve('arbitrary/id', function(error) {
+      resolve('arbitrary/id', done(function(error) {
         assert.equals(error, parseError);
-        done();
-      });
+      }));
     },
 
     'uses the ast provided by parse to create a module': function(done) {
@@ -50,11 +48,10 @@ buster.testCase('createResolve', {
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
 
-      resolve(moduleId, function(error, module) {
+      resolve(moduleId, done(function(error, module) {
         refute(error);
         assert.equals(module, createModule(moduleId, moduleAst));
-        done();
-      });
+      }));
     },
 
     'the created module has the correct dependencies array': function(done) {
@@ -71,11 +68,10 @@ buster.testCase('createResolve', {
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
 
-      resolve(moduleId, function(error, module) {
+      resolve(moduleId, done(function(error, module) {
         refute(error);
         assert.equals(module, createModule(moduleId, moduleAst, dependencies));
-        done();
-      });
+      }));
     },
 
     'relative dependencies of the module are made absolute': function(done) {
@@ -89,11 +85,10 @@ buster.testCase('createResolve', {
       var parse = createParseFixtures(this.stub());
       var resolve = createResolve(loadFile, parse);
 
-      resolve(moduleId, function(error, module) {
+      resolve(moduleId, done(function(error, module) {
         refute(error);
         assert.equals(module.dependencies, ['f/g/h/b', 'f/g/c/d']);
-        done();
-      });
+      }));
     }
   }
 });

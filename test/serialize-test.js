@@ -35,11 +35,10 @@ buster.testCase('serializeModules', {
       var entryModule = createModule(entryModuleName);
       var resolve = createResolve(this.stub(), [entryModule]);
 
-      serializeModules([entryModuleName], resolve, function(error, modules) {
+      serializeModules([entryModuleName], resolve, done(function(error, modules) {
         refute(error);
         assert.equals(modules, [entryModule]);
-        done();
-      });
+      }));
     }
   },
 
@@ -49,11 +48,10 @@ buster.testCase('serializeModules', {
       var dependencyModule = createModule('dependency/module');
       var resolve = createResolve(this.stub(), [entryModule, dependencyModule]);
 
-      serializeModules([entryModule.id], resolve, function(error, modules) {
+      serializeModules([entryModule.id], resolve, done(function(error, modules) {
         refute(error);
         assert.equals(modules, [dependencyModule, entryModule]);
-        done();
-      });
+      }));
     }
   },
 
@@ -81,11 +79,10 @@ buster.testCase('serializeModules', {
       var moduleB = createModule(nameB, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules([nameA], resolve, function(error, modules) {
+      serializeModules([nameA], resolve, done(function(error, modules) {
         refute(error);
         assert.equals(modules, [moduleB, moduleA]);
-        done();
-      });
+      }));
     },
 
     'An indirect circular dependency should resolve': function(done) {
@@ -95,11 +92,10 @@ buster.testCase('serializeModules', {
       var moduleC = createModule(nameC, [nameA]);
       var resolve = createResolve(this.stub(), [moduleA, moduleB, moduleC]);
 
-      serializeModules([nameA], resolve, function(error, modules) {
+      serializeModules([nameA], resolve, done(function(error, modules) {
         refute(error);
         assert.equals(modules, [moduleC, moduleB, moduleA]);
-        done();
-      });
+      }));
     }
   },
 
@@ -129,10 +125,9 @@ buster.testCase('serializeModules', {
         });
       }
 
-      serializeModules(['inresolvable/module'], resolve, function(error) {
+      serializeModules(['inresolvable/module'], resolve, done(function(error) {
         assert(error);
-        done();
-      });
+      }));
     },
 
     'the callback should be invoked with an error if a dependency cannot be resolved': function(done) {
@@ -140,19 +135,17 @@ buster.testCase('serializeModules', {
       var moduleB = createModule('first/dependency', ['missing/dependency']);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules([moduleA.id], resolve, function(error) {
+      serializeModules([moduleA.id], resolve, done(function(error) {
         assert(error);
-        done();
-      });
+      }));
     }
   },
 
   'relative module names': {
     'an error should be returned if the entry module is relative': function(done) {
-      serializeModules(['./a/relative/id'], function() {}, function(error) {
+      serializeModules(['./a/relative/id'], function() {}, done(function(error) {
         assert(error);
-        done();
-      });
+      }));
     },
 
     'an error should be returned if any dependency is relative': function(done) {
@@ -161,10 +154,9 @@ buster.testCase('serializeModules', {
       var moduleB = createModule(nameB, ['../relative/dependency']);
       var resolve = createResolve(this.stub(), [moduleA, moduleB]);
 
-      serializeModules([nameA], resolve, function(error) {
+      serializeModules([nameA], resolve, done(function(error) {
         assert(error);
-        done();
-      });
+      }));
     }
   }
 });
@@ -172,16 +164,15 @@ buster.testCase('serializeModules', {
 function testModules(entryModuleNames, modules) {
   return {
     'should create a serialization that contains each module exactly once': function(done) {
-      serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
+      serializeModules(entryModuleNames, createResolve(this.stub(), modules), done(function(error, result) {
         refute(error);
         modules.forEach(function(module) {
           assert.containsOnce(result, module);
         });
-        done();
-      });
+      }));
     },
     'should contain all dependencies in the correct order': function(done) {
-      serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
+      serializeModules(entryModuleNames, createResolve(this.stub(), modules), done(function(error, result) {
         refute(error);
         modules.
           filter(hasDependencies).
@@ -192,8 +183,7 @@ function testModules(entryModuleNames, modules) {
                 assert.containsInOrder(result, dependency, module);
               });
           });
-        done();
-      });
+      }));
     }
   }
 }
