@@ -183,12 +183,12 @@ function testModules(entryModuleNames, modules) {
     'should contain all dependencies in the correct order': function(done) {
       serializeModules(entryModuleNames, createResolve(this.stub(), modules), function(error, result) {
         refute(error);
-        modules
-          .filter(hasDependencies)
-          .forEach(function(module) {
-            module.dependencies
-              .map(moduleById.bind(null, modules))
-              .forEach(function(dependency) {
+        modules.
+          filter(hasDependencies).
+          forEach(function(module) {
+            module.dependencies.
+              map(moduleById.bind(null, modules)).
+              forEach(function(dependency) {
                 assert.containsInOrder(result, dependency, module);
               });
           });

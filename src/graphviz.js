@@ -1,7 +1,7 @@
 module.exports = function(modules) {
-  return ['strict digraph "dependency tree" {']
-    .concat(flatten(modules.map(toEdges)), ['}'])
-    .join('\n');
+  return ['strict digraph "dependency tree" {'].
+    concat(flatten(modules.map(toEdges)), ['}']).
+    join('\n');
 };
 
 function flatten(array) {
